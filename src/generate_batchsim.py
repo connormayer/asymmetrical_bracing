@@ -22,11 +22,7 @@ df = pandas.read_csv("data/bracing_activations.csv")
 # Just keep muscle activations, plus new columns reflecting conditions
 new_header = []
 
-muscle_names = list(set(df.columns[8:18]) - set("SL"))
-
-for name in muscle_names:
-    new_header.extend([name + "-L", name + "-R"])
-new_header.extend(["SL", "L_ANT", "R_ANT", "L_AG", "R_AG", "SL_ACT"])
+muscle_names = list(set(df.columns[8:18]))
 
 new_rows = []
 for index, row in df.iterrows():
@@ -40,7 +36,7 @@ for index, row in df.iterrows():
                     new_row['R_AG'] = 1
                     new_row['SL_ACT'] = sl_act
 
-                    for muscle in muscle_names + ["SL"]:
+                    for muscle in muscle_names:
                         if muscle == "SL":
                             new_row["SL"] = round(row["SL"] * sl_act, 2)
                             continue
@@ -50,8 +46,8 @@ for index, row in df.iterrows():
                         else:
                             l_mult = l_ag_act
 
-                        new_row[muscle + "-L"] = round(row[muscle] * l_mult, 2)
-                        new_row[muscle + "-R"] = row[muscle]
+                        new_row[muscle + "_L"] = round(row[muscle] * l_mult, 2)
+                        new_row[muscle + "_R"] = row[muscle]
 
                     new_rows.append(new_row)
 
@@ -64,10 +60,14 @@ batchsim_rows.append('@PHONY "simnum" = {{%{}%}}'.format(
 ))
 
 muscle_names = new_df.iloc[:, 5:]
+
+for muscle in muscle_names:
+    batchsim_rows.append('"models/jawmodel/models/tongue/bundles/{}:excitation" = {{}}'.format(muscle))
+
 for idx, row in new_df.iterrows():
     batchsim_rows.append('redef')
     for muscle in muscle_names:
-        batchsim_rows.append('\t"{}"" = {{%{}%}}'.format(muscle, row[muscle]))
+        batchsim_rows.append('\t"models/jawmodel/models/tongue/bundles/{}:excitation" = {{%{}%}}'.format(muscle, row[muscle]))
     batchsim_rows.append('when')
     batchsim_rows.append('\t"simnum" = {{%{}%}}'.format(str(idx)))
     batchsim_rows.append("end")
@@ -91,5 +91,5 @@ for idx, row in new_df.iterrows():
 
 # muscles, activations = muscle_activation_sets.items()
 
-with open('data/asymmetrical_batchsim.pl', 'w') as f:
+with open('data/props.psl', 'w') as f:
     f.write('\n'.join(batchsim_rows))
