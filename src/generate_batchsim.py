@@ -52,6 +52,7 @@ for index, row in df.iterrows():
                     new_rows.append(new_row)
 
 new_df = pandas.DataFrame(new_rows)
+new_df.to_csv("data/asymmetrical_activations.csv")
 
 # Create batchsim file
 batchsim_rows = []
