@@ -48,7 +48,7 @@ for index, row in df.iterrows():
 
                         new_row[muscle + "_L"] = round(row[muscle] * l_mult, 2)
                         new_row[muscle + "_R"] = row[muscle]
-
+                        
                     new_rows.append(new_row)
 
 new_df = pandas.DataFrame(new_rows)
@@ -92,5 +92,5 @@ for idx, row in new_df.iterrows():
 
 # muscles, activations = muscle_activation_sets.items()
 
-with open('data/props.psl', 'w') as f:
+with open('data/props_50_150.psl', 'w') as f:
     f.write('\n'.join(batchsim_rows))
