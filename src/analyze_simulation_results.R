@@ -6,7 +6,7 @@ library(nnet)
 setwd("E:/git_repos/asymmetrical_bracing/")
 
 
-data_folder <- "data/50-150_simulations"
+data_folder <- "data/80-120_simulations"
 
 contacts_df <- tibble()
 excitation_df <- tibble()
@@ -45,7 +45,7 @@ colnames(failures_df) <- failures_headers
 
 success_df <- inner_join(contacts_df, excitation_df, by = c("sim", "condition"))
 
-groupings_df <- read_csv("data/asymmetrical_activations.csv")
+groupings_df <- read_csv("data/asymmetrical_activations_80_120.csv")
 colnames(groupings_df)[1] <- 'sim'
 
 success_df <- inner_join(success_df, groupings_df, by=c('sim', "IL_L", "IL_R", "GGM_L", "GGM_R", "GGP_L", "GGP_R", "VERT_L", "VERT_R",
@@ -59,6 +59,7 @@ mean_contacts <- success_df %>%
   select(condition, front, mid, back, lat_left, lat_right, coronal) %>%
   group_by(condition) %>%
   summarise(across(c(front, mid, back, lat_left, lat_right, coronal), mean, na.rm=TRUE))
+mean_contacts
 
 mean_activations <- success_df %>%
   select(condition, IL_L, IL_R, GGM_L, GGM_R, GGP_L, GGP_R, VERT_L, VERT_R,
@@ -68,7 +69,7 @@ mean_activations <- success_df %>%
   summarise(across(c(IL_L, IL_R, GGM_L, GGM_R, GGP_L, GGP_R, VERT_L, VERT_R,
                      HG_L, HG_R, STY_L, STY_R, MH_L, MH_R, SL, TRANS_L, TRANS_R,
                      GGA_L, GGA_R), mean, na.rm=TRUE))
-
+mean_activations
 
 # 
 # print("Successful sims")

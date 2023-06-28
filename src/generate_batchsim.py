@@ -26,9 +26,9 @@ muscle_names = list(set(df.columns[8:18]))
 
 new_rows = []
 for index, row in df.iterrows():
-    for l_ant_act in [1, 1.5]:
-        for l_ag_act in [0.5, 1]:
-            for sl_act in [0.5, 1]:
+    for l_ant_act in [1, 1.2]:
+        for l_ag_act in [0.8, 1]:
+            for sl_act in [0.8, 1]:
                     new_row = {}
                     new_row['L_ANT'] = l_ant_act
                     new_row['R_ANT'] = 1
@@ -52,7 +52,7 @@ for index, row in df.iterrows():
                     new_rows.append(new_row)
 
 new_df = pandas.DataFrame(new_rows)
-new_df.to_csv("data/asymmetrical_activations.csv")
+new_df.to_csv("data/asymmetrical_activations_80_120.csv")
 
 # Create batchsim file
 batchsim_rows = []
@@ -92,5 +92,5 @@ for idx, row in new_df.iterrows():
 
 # muscles, activations = muscle_activation_sets.items()
 
-with open('data/props_50_150.psl', 'w') as f:
+with open('data/props_80_120.psl', 'w') as f:
     f.write('\n'.join(batchsim_rows))
