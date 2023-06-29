@@ -2,8 +2,8 @@ library(tidyverse)
 library(lme4)
 library(nnet)
 
-#setwd("C:/Users/conno/git_repos/bracing_simulations")
-setwd("E:/git_repos/asymmetrical_bracing/")
+setwd("C:/Users/conno/git_repos/asymmetrical_bracing/")
+#setwd("E:/git_repos/asymmetrical_bracing/")
 
 
 data_folder <- "data/80-120_simulations"
@@ -15,15 +15,29 @@ failures_df <- tibble()
 contacts_headers <- c(
   "sim", "front", "mid", "back", "lat_left", "lat_right", "coronal", "condition"
 )
+# excitation_headers <- c(
+#   "sim", "IL_L", "IL_R", "GGM_L", "GGM_R", "GGP_L", "GGP_R", "VERT_L", "VERT_R",
+#   "HG_L", "HG_R", "STY_L", "STY_R", "MH_L", "MH_R", "SL", "TRANS_L", "TRANS_R",
+#   "GGA_L", "GGA_R", "condition"
+# )
+# failures_headers <- c(
+#   "IL_L", "IL_R", "GGM_L", "GGM_R", "GGP_L", "GGP_R", "VERT_L", "VERT_R",
+#   "HG_L", "HG_R", "STY_L", "STY_R", "MH_L", "MH_R", "SL", "TRANS_L", "TRANS_R",
+#   "GGA_L", "GGA_R", "condition"
+#)
+
+contacts_headers <- c(
+  "sim", "front", "mid", "back", "lat_left", "lat_right", "coronal", "condition"
+)
 excitation_headers <- c(
-  "sim", "IL_L", "IL_R", "GGM_L", "GGM_R", "GGP_L", "GGP_R", "VERT_L", "VERT_R",
-  "HG_L", "HG_R", "STY_L", "STY_R", "MH_L", "MH_R", "SL", "TRANS_L", "TRANS_R",
-  "GGA_L", "GGA_R", "condition"
+  "sim", "HG_L", "HG_R", "SL", "GGM_L", "GGM_R", "STY_L", "STY_R", "TRANS_L",
+  "TRANS_R", "IL_L", "IL_R", "VERT_L", "VERT_R", "GGP_L", "GGP_R", "GGA_L", "GGA_R",
+  "MH_L", "MH_R", "condition"
 )
 failures_headers <- c(
-  "IL_L", "IL_R", "GGM_L", "GGM_R", "GGP_L", "GGP_R", "VERT_L", "VERT_R",
-  "HG_L", "HG_R", "STY_L", "STY_R", "MH_L", "MH_R", "SL", "TRANS_L", "TRANS_R",
-  "GGA_L", "GGA_R", "condition"
+  "HG_L", "HG_R", "SL", "GGM_L", "GGM_R", "STY_L", "STY_R", "TRANS_L",
+  "TRANS_R", "IL_L", "IL_R", "VERT_L", "VERT_R", "GGP_L", "GGP_R", "GGA_L", "GGA_R",
+  "MH_L", "MH_R", "condition"
 )
 
 for (f in list.files(data_folder)) {
