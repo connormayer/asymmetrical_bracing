@@ -2,48 +2,25 @@ library(tidyverse)
 library(lme4)
 library(nnet)
 
+# Change this to your local directory
 setwd("C:/Users/conno/git_repos/asymmetrical_bracing/")
 #setwd("E:/git_repos/asymmetrical_bracing/")
 
-
-data_folder <- "data/80-120_simulations"
+# You may need to change these
+data_folder <- "data/50-150_simulations_jaw"
+groupings_file <- "data/asymmetrical_activations_50_150_jaw.csv"
 
 contacts_df <- tibble()
 excitation_df <- tibble()
 failures_df <- tibble()
 
 contacts_headers <- c(
-  "sim", "front", "mid", "back", "lat_left", "lat_right", "coronal", "condition"
-)
-# excitation_headers <- c(
-#   "sim", "IL_L", "IL_R", "GGM_L", "GGM_R", "GGP_L", "GGP_R", "VERT_L", "VERT_R",
-#   "HG_L", "HG_R", "STY_L", "STY_R", "MH_L", "MH_R", "SL", "TRANS_L", "TRANS_R",
-#   "GGA_L", "GGA_R", "condition"
-# )
-# failures_headers <- c(
-#   "IL_L", "IL_R", "GGM_L", "GGM_R", "GGP_L", "GGP_R", "VERT_L", "VERT_R",
-#   "HG_L", "HG_R", "STY_L", "STY_R", "MH_L", "MH_R", "SL", "TRANS_L", "TRANS_R",
-#   "GGA_L", "GGA_R", "condition"
-#)
-
-contacts_headers <- c(
-  "sim", "front", "mid", "back", "lat_left", "lat_right", "coronal", "condition"
-)
-excitation_headers <- c(
-  "sim", "HG_L", "HG_R", "SL", "GGM_L", "GGM_R", "STY_L", "STY_R", "TRANS_L",
-  "TRANS_R", "IL_L", "IL_R", "VERT_L", "VERT_R", "GGP_L", "GGP_R", "GGA_L", "GGA_R",
-  "MH_L", "MH_R", "condition"
-)
-failures_headers <- c(
-  "HG_L", "HG_R", "SL", "GGM_L", "GGM_R", "STY_L", "STY_R", "TRANS_L",
-  "TRANS_R", "IL_L", "IL_R", "VERT_L", "VERT_R", "GGP_L", "GGP_R", "GGA_L", "GGA_R",
-  "MH_L", "MH_R", "condition"
+  "sim", "front", "mid", "back", "lat_left", "lat_right", "coronal"
 )
 
 for (f in list.files(data_folder)) {
   full_path <- file.path(data_folder, f)
   data <- read_csv(full_path, col_names=FALSE,col_types = cols())
-  data$condition <- '50'
   if (str_detect(f, "contacts")) {
     contacts_df <- rbind(contacts_df, data)
   } else if (str_detect(f, "failed")) {
@@ -54,18 +31,11 @@ for (f in list.files(data_folder)) {
 }
 
 colnames(contacts_df) <- contacts_headers
-colnames(excitation_df) <- excitation_headers
-colnames(failures_df) <- failures_headers
 
-success_df <- inner_join(contacts_df, excitation_df, by = c("sim", "condition"))
-
-groupings_df <- read_csv("data/asymmetrical_activations_80_120.csv")
+groupings_df <- read_csv(groupings_file)
 colnames(groupings_df)[1] <- 'sim'
 
-success_df <- inner_join(success_df, groupings_df, by=c('sim', "IL_L", "IL_R", "GGM_L", "GGM_R", "GGP_L", "GGP_R", "VERT_L", "VERT_R",
-                                                        "HG_L", "HG_R", "STY_L", "STY_R", "MH_L", "MH_R", "SL", "TRANS_L", "TRANS_R",
-                                                        "GGA_L", "GGA_R"))
-
+success_df <- inner_join(contacts_df, groupings_df, by = c("sim"))
 success_df$condition <- paste("Agonists:", success_df$L_AG, "Antagonists", success_df$L_ANT)
 success_df <- success_df %>% filter(SL_ACT == 1)
 
@@ -85,18 +55,12 @@ mean_activations <- success_df %>%
                      GGA_L, GGA_R), mean, na.rm=TRUE))
 mean_activations
 
-# 
-# print("Successful sims")
-# print(success_df %>% group_by(condition) %>% count())
-# 
-# print("Bracing outcomes")
-# print(bracing %>% group_by(condition) %>% count())
-# 
-# print("Unilateral bracing outcomes")
-# print(uni_bracing %>% group_by(condition) %>% count())
-# 
-# print("Mean bracing activations")
-# print(mean_activations)
+
+print("Successful sims")
+print(success_df %>% group_by(condition) %>% count())
+
+print("Mean bracing activations")
+print(mean_activations)
 # 
 # print("Mean unilateral bracing activations")
 # print(mean_uni_activations)
@@ -107,35 +71,52 @@ mean_activations
 # print("Mean unilateral contacts")
 # print(mean_uni_contacts)
 # 
-# # Compare activation by bracer/non-bracer category
-# cat_data <- success_df %>%
-#   select(L_AG, L_ANT, SL_ACT, IL_L, IL_R, GGM_L, GGM_R, GGP_L, GGP_R, VERT_L, VERT_R,
-#          HG_L, HG_R, STY_L, STY_R, MH_L, MH_R, SL, TRANS_L, TRANS_R,
-#          GGA_L, GGA_R)
-# 
-# cat_pivot <- cat_data %>%
-#   pivot_longer(c(-L_AG, -L_ANT, -SL_ACT), names_to="muscle", values_to="activation") %>%
-#   mutate(type=ifelse(muscle %in% c("GGP_L", "GGP_R", "GGM_L", "GGM_R", "MH_L",
-#                                    "MH_R", "VERT_L", "VERT_R", "SL"), 'agonist', 'antagonist'))
-# 
-# print("Mean activation across conditions by agonist/antagonist")
-# cat_pivot %>% group_by(L_AG, L_ANT, SL_ACT, type) %>% summarize(mean=mean(activation))
-# 
-# # Stats
-# activation_df_stats <- success_df %>%
-#   mutate(
-#     contact = front > 0 | mid > 0 | back > 0 | lat_left > 0 | lat_right > 0 | coronal > 0, 'contact', 'no contact',
-#     bracing = ifelse(lat_left > 0 & lat_right > 0, 'bi_bracing', ifelse(lat_right | lat_left, 'uni_bracing', 'no bracing'))
-#   ) %>%
-#   select(contact, bracing, lat_left, L_AG, L_ANT, SL_ACT) 
-# 
-# #activation_df_stats$condition <- factor(activation_df_stats$condition, levels=c("5mm", "10mm"))
-# test <- lm(lat_left ~ L_AG + L_ANT + SL_ACT, data = activation_df_stats)
-# z <- summary(test)$coefficients/summary(test)$standard.errors
-# p <- (1 - pnorm(abs(z), 0, 1)) * 2
-# p
-# summary(test)
-# 
+# Compare activation by bracer/non-bracer category
+cat_data <- success_df %>%
+  select(L_AG, L_ANT, SL_ACT, IL_L, IL_R, GGM_L, GGM_R, GGP_L, GGP_R, VERT_L, VERT_R,
+         HG_L, HG_R, STY_L, STY_R, MH_L, MH_R, SL, TRANS_L, TRANS_R,
+         GGA_L, GGA_R)
+
+cat_pivot <- cat_data %>%
+  pivot_longer(c(-L_AG, -L_ANT, -SL_ACT), names_to="muscle", values_to="activation") %>%
+  mutate(type=ifelse(muscle %in% c("GGP_L", "GGP_R", "GGM_L", "GGM_R", "MH_L",
+                                   "MH_R", "VERT_L", "VERT_R", "SL"), 'agonist', 'antagonist'))
+
+print("Mean activation across conditions by agonist/antagonist")
+cat_pivot %>% group_by(L_AG, L_ANT, SL_ACT, type) %>% summarize(mean=mean(activation))
+
+# Stats
+activation_df_stats <- success_df %>%
+  mutate(
+    contact = front > 0 | mid > 0 | back > 0 | lat_left > 0 | lat_right > 0 | coronal > 0, 'contact', 'no contact',
+    r_bracing = ifelse(lat_right > 0, TRUE, FALSE),
+    l_bracing = ifelse(lat_left > 0, TRUE, FALSE)
+  ) 
+
+# Coarse analysis
+r_m_coarse <- glm(r_bracing ~ L_AG * L_ANT,
+           data = activation_df_stats, family = 'binomial')
+summary(r_m_coarse)
+
+l_m_coarse <- glm(l_bracing ~ L_AG * L_ANT,
+                  data = activation_df_stats, family = 'binomial')
+summary(l_m_coarse)
+
+
+# Fine analysis
+l_m <- glm(l_bracing ~ GGP_L + GGM_L + GGA_L + STY_L + MH_L + HG_L + TRANS_L + VERT_L + IL_L,
+           data = activation_df_stats, family = 'binomial')
+summary(l_m)
+
+# Fine analysis
+r_m <- glm(r_bracing ~ GGP_L + GGM_L + GGA_L + STY_L + MH_L + HG_L + TRANS_L + VERT_L + IL_L,
+         data = activation_df_stats, family = 'binomial')
+summary(r_m)
+
+l_m <- glm(l_bracing ~ GGP_L + GGM_L + GGA_L + STY_L + MH_L + HG_L + TRANS_L + VERT_L + IL_L,
+           data = activation_df_stats, family = 'binomial')
+summary(l_m)
+
 # # Visualization
 # 
 # # Histogram of activation level counts
