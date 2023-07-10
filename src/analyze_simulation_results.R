@@ -7,7 +7,7 @@ setwd("C:/Users/conno/git_repos/asymmetrical_bracing/")
 #setwd("E:/git_repos/asymmetrical_bracing/")
 
 # You may need to change these
-data_folder <- "data/50-150_simulations_jaw"
+data_folder <- "data/50-150_jaw_simulations"
 groupings_file <- "data/asymmetrical_activations_50_150_jaw.csv"
 
 contacts_df <- tibble()
@@ -36,7 +36,7 @@ groupings_df <- read_csv(groupings_file)
 colnames(groupings_df)[1] <- 'sim'
 
 success_df <- inner_join(contacts_df, groupings_df, by = c("sim"))
-success_df$condition <- paste("Agonists:", success_df$L_AG, "Antagonists", success_df$L_ANT)
+success_df$condition <- paste("Agonists:", success_df$L_AG, "\nAntagonists:", success_df$L_ANT)
 success_df <- success_df %>% filter(SL_ACT == 1)
 
 mean_contacts <- success_df %>%
@@ -65,8 +65,23 @@ print(mean_activations)
 # print("Mean unilateral bracing activations")
 # print(mean_uni_activations)
 # 
-# print("Mean contacts")
-# print(mean_contacts)
+print("Mean contacts")
+print(mean_contacts)
+
+plot_df <- success_df %>%
+  mutate(left = ifelse(lat_left > 0, 1, 0),
+         right = ifelse(lat_right > 0, 1, 0)) %>%
+  select(left, right, condition) %>%
+  pivot_longer(cols=c("left", "right"), 
+               names_to='side', values_to='contacts')
+
+ggplot(plot_df) +
+  geom_bar(aes(x=condition, y=contacts, fill=side), 
+           stat='summary', fun='mean', position='dodge') +
+  ylab("Proportion of simulations with bracing") +
+  xlab("Condition") +
+  scale_fill_discrete(name = "Bracing side") +
+  theme_classic(base_size=20)
 # 
 # print("Mean unilateral contacts")
 # print(mean_uni_contacts)
@@ -88,9 +103,11 @@ cat_pivot %>% group_by(L_AG, L_ANT, SL_ACT, type) %>% summarize(mean=mean(activa
 # Stats
 activation_df_stats <- success_df %>%
   mutate(
-    contact = front > 0 | mid > 0 | back > 0 | lat_left > 0 | lat_right > 0 | coronal > 0, 'contact', 'no contact',
+    contact = ifelse(front > 0 | mid > 0 | back > 0 | lat_left > 0 | lat_right > 0 | coronal > 0, 'contact', 'no contact'),
     r_bracing = ifelse(lat_right > 0, TRUE, FALSE),
-    l_bracing = ifelse(lat_left > 0, TRUE, FALSE)
+    l_bracing = ifelse(lat_left > 0, TRUE, FALSE),
+    L_ANT = scale(L_ANT),
+    L_AG = scale(L_AG)
   ) 
 
 # Coarse analysis
